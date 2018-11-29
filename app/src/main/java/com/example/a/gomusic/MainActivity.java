@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -23,6 +24,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.a.gomusic.Adapter.SongListAdapter;
@@ -43,7 +45,10 @@ public class MainActivity extends AppCompatActivity {
     private Intent playIntent;
     private boolean musicBound = false;
     private ImageView imageViewMain, imageViewSlide;
-    private TextView textTitleMain, textTitleslide, textArtistMain, textArtistSlide, textDateStart, textDateEnd;
+    private TextView textTitleMain, textTitleslide, textArtistMain, textArtistSlide, textTimeStart, textTimeEnd;
+    private SeekBar seekBar;
+    private Handler mHandler = new Handler();
+
 
     //connect to the service
     private ServiceConnection musicConnection = new ServiceConnection() {
@@ -73,7 +78,11 @@ public class MainActivity extends AppCompatActivity {
         imageViewSlide = findViewById(R.id.album_cover_slide);
         textTitleMain = findViewById(R.id.song_title_main);
         textTitleslide = findViewById(R.id.song_title_slide);
-//        textArtistMain=findViewById(R.id.TODO);
+        textTimeEnd = findViewById(R.id.timeEnd);
+        textTimeStart = findViewById(R.id.timeStart);
+        seekBar = findViewById(R.id.seekBar);
+        setSeekBar();
+
         //Naviagation Button
         ImageButton buttonNext = findViewById(R.id.nextMain);
         buttonNext.setOnClickListener(new View.OnClickListener() {
@@ -182,8 +191,7 @@ public class MainActivity extends AppCompatActivity {
 
                         String path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
                         if (path == null) {
-                            Log.d("if condition", "Null pinter?");
-                            thispath = Uri.parse("0");
+                            thispath = Uri.parse("android.resource://" + BuildConfig.APPLICATION_ID + "/drawable/ic_audiotrack_black_24dp");
                         } else
                             thispath = Uri.parse(path);
                         cursor.close();
@@ -290,7 +298,6 @@ public class MainActivity extends AppCompatActivity {
         musicSrv.seek(pos);
     }
 
-
     public void start() {
         musicSrv.go();
     }
@@ -302,6 +309,44 @@ public class MainActivity extends AppCompatActivity {
         musicSrv = null;
         super.onDestroy();
     }
+
+    public void setSeekBar() {
+        final String[] a = new String[1];
+
+        //UI thread
+        MainActivity.this.runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                Log.d("ASYNC", "RUNNING");
+                if (musicSrv != null) {
+
+                    if (musicSrv.isPng() && musicBound) {
+                        int mTotalTime = musicSrv.getDur() / 1000;
+                        int mCurrentPosition = musicSrv.getCTime() / 1000;
+
+                        seekBar.setMax(mTotalTime);
+                        String ab = String.valueOf(mTotalTime);
+                        Log.d("songMaxTimeMain", ab);
+                        textTimeEnd.setText(ab);
+                        seekBar.setProgress(mCurrentPosition);
+                        a[0] = String.valueOf(mCurrentPosition);
+                        Log.d("songCurrentTimeMain", a[0]);
+                        textTimeStart.setText(a[0]);
+
+                    } else if (musicSrv != null && !musicSrv.isPng()) {
+                        Log.d("RUNNING CONDITION", "a");
+                        musicSrv.playNext();
+                        updateUI(musicSrv.getSongId());
+                    }
+                }
+
+                mHandler.postDelayed(this, 1000);
+            }
+
+        });
+    }
+
 }
 //TODO
 //https://code.tutsplus.com/tutorials/create-a-music-player-on-android-user-controls--mobile-22787
