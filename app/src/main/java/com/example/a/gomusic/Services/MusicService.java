@@ -50,7 +50,6 @@ public class MusicService extends Service implements
     }
 
 
-
     public void setList(ArrayList<Song> theSongs) {
         songs = theSongs;
     }
@@ -101,9 +100,8 @@ public class MusicService extends Service implements
         songPosn = songIndex;
     }
 
-
-    public int getPosn() {
-        return player.getCurrentPosition();
+    public int getSongId() {
+        return songPosn;
     }
 
     public int getDur() {
@@ -142,7 +140,6 @@ public class MusicService extends Service implements
         if (songPosn >= songs.size()) songPosn = 0;
         playSong();
     }
-
 
     public class MusicBinder extends Binder {
         public MusicService getService() {

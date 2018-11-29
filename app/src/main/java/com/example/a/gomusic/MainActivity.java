@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean musicBound = false;
     private ImageView imageViewMain, imageViewSlide;
     private TextView textTitleMain, textTitleslide, textArtistMain, textArtistSlide, textDateStart, textDateEnd;
-    private ImageButton buttonNext, buttonPrevious, buttonSeekForward, buttonseekReverse;
 
     //connect to the service
     private ServiceConnection musicConnection = new ServiceConnection() {
@@ -76,36 +75,42 @@ public class MainActivity extends AppCompatActivity {
         textTitleslide = findViewById(R.id.song_title_slide);
 //        textArtistMain=findViewById(R.id.TODO);
         //Naviagation Button
-        buttonNext = findViewById(R.id.nextMain);
+        ImageButton buttonNext = findViewById(R.id.nextMain);
         buttonNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 playNext();
             }
         });
-        buttonPrevious = findViewById(R.id.previousMain);
+        ImageButton buttonPrevious = findViewById(R.id.previousMain);
         buttonPrevious.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 playPrev();
             }
         });
-        buttonSeekForward = findViewById(R.id.seekforward);
+        ImageButton buttonSeekForward = findViewById(R.id.seekforward);
         buttonSeekForward.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("GET DURATION", "button Seek forward" + getCurrentTime());
-                forward();
-
+                forward(getCurrentTime());
             }
         });
-        buttonseekReverse = findViewById(R.id.seekback);
+        ImageButton buttonseekReverse = findViewById(R.id.seekback);
         buttonseekReverse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("GET DURATION", "button Seek backward" + getCurrentTime());
-
-                reverse();
+                reverse(getCurrentTime());
+            }
+        });
+        ImageButton buttonPausePlayMain = findViewById(R.id.pause_play_main);
+        buttonPausePlayMain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isPlaying()) {
+                    pause();
+                } else
+                    start();
             }
         });
 
@@ -232,11 +237,30 @@ public class MainActivity extends AppCompatActivity {
     //play next
     public void playNext() {
         musicSrv.playNext();
+        updateUI(musicSrv.getSongId());
     }
 
     //play previous
     private void playPrev() {
         musicSrv.playPrev();
+        updateUI(musicSrv.getSongId());
+    }
+
+    private void reverse(int currentTime) {
+        if (currentTime < 5000)
+            currentTime = 0;
+        else
+            currentTime = currentTime - 5000;
+        musicSrv.seek(currentTime);
+
+    }
+
+    private void forward(int currentTime) {
+        if (currentTime >= (getTotalTime() - 5000)) {
+            currentTime = getTotalTime();
+        } else
+            currentTime = currentTime + 5000;
+        musicSrv.seek(currentTime);
     }
 
     public int getTotalTime() {
@@ -266,11 +290,6 @@ public class MainActivity extends AppCompatActivity {
         musicSrv.seek(pos);
     }
 
-    private void reverse() {
-    }
-
-    private void forward() {
-    }
 
     public void start() {
         musicSrv.go();
