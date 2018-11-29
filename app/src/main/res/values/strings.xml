@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Go Music</string>
+    <string name="cover_image">Cover_Image</string>
+    <string name="album_cover_slide_main">album_cover_slide_main</string>
+    <string name="todo">TODO</string>
+    <string name="default_time">00:00</string>
+    <string name="album_cover_slide_mains">album cover slide main</string>
+    <string name="album_cover">ALBUM COVER</string>
+</resources>
